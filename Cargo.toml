@@ -1,18 +1,18 @@
 [package]
 edition      = "2024"
-name         = "esp-app"
-rust-version = "1.88"
+name         = "salt-level"
+rust-version = "1.97.1"
 version      = "0.1.0"
 
 [[bin]]
-name = "esp-app"
+name = "salt-level"
 path = "./src/bin/main.rs"
 
 [dependencies]
 esp-hal = { version = "~1.1.0", features = ["defmt", "esp32c3", "unstable"] }
 
 
-defmt                  = "1.0.1"
+defmt                  = "1.1.1"
 esp-bootloader-esp-idf = { version = "0.5.0", features = ["defmt", "esp32c3"] }
 
 critical-section = "1.2.0"
