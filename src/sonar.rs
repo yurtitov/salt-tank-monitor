@@ -1,6 +1,6 @@
 use esp_hal::{
     delay::Delay,
-    gpio::{Input, Output},
+    gpio::{Input, InputConfig, InputPin, Level, Output, OutputConfig, OutputPin},
     time::{Duration, Instant},
 };
 
@@ -11,7 +11,9 @@ pub struct Sonar<'a> {
 }
 
 impl<'a> Sonar<'a> {
-    pub fn from(trigger_pin: Output<'a>, echo_pin: Input<'a>) -> Self {
+    pub fn new(trigger_pin: impl OutputPin + 'a, echo_pin: impl InputPin + 'a) -> Self {
+        let trigger_pin = Output::new(trigger_pin, Level::Low, OutputConfig::default());
+        let echo_pin = Input::new(echo_pin, InputConfig::default());
         let delay = Delay::new();
         Sonar {
             trigger_pin,
@@ -21,6 +23,8 @@ impl<'a> Sonar<'a> {
     }
 
     pub fn distance(&mut self) -> Option<f32> {
+        self.delay.delay_millis(200);
+
         self.trigger_pin.set_low();
         self.delay.delay_micros(2);
         self.trigger_pin.set_high();

@@ -11,8 +11,7 @@ mod sonar;
 
 use defmt::{error, info, warn};
 use esp_hal::clock::CpuClock;
-use esp_hal::delay::Delay;
-use esp_hal::gpio::{self, Input, InputConfig, Output, OutputConfig};
+use esp_hal::gpio::{self, Output, OutputConfig};
 use esp_hal::main;
 
 use crate::sonar::Sonar;
@@ -44,12 +43,7 @@ fn main() -> ! {
         OutputConfig::default(),
     );
 
-    let delay = Delay::new();
-
-    let trig = Output::new(peripherals.GPIO7, gpio::Level::Low, OutputConfig::default());
-    let echo = Input::new(peripherals.GPIO10, InputConfig::default());
-
-    let mut sonar = Sonar::from(trig, echo);
+    let mut sonar = Sonar::new(peripherals.GPIO7, peripherals.GPIO10);
 
     loop {
         led.set_high();
@@ -65,7 +59,5 @@ fn main() -> ! {
             }
             None => warn!("Timeout: Echo is not received"),
         }
-
-        delay.delay_millis(200);
     }
 }
