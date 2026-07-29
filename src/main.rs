@@ -7,12 +7,15 @@
 )]
 #![deny(clippy::large_stack_frames)]
 
+mod sonar;
+
 use defmt::{error, info, warn};
 use esp_hal::clock::CpuClock;
 use esp_hal::delay::Delay;
 use esp_hal::gpio::{self, Input, InputConfig, Output, OutputConfig};
 use esp_hal::main;
-use esp_hal::time::{Duration, Instant};
+
+use crate::sonar::Sonar;
 
 #[panic_handler]
 fn panic(panic_info: &core::panic::PanicInfo) -> ! {
@@ -43,55 +46,26 @@ fn main() -> ! {
 
     let delay = Delay::new();
 
-    let mut trig = Output::new(peripherals.GPIO7, gpio::Level::Low, OutputConfig::default());
+    let trig = Output::new(peripherals.GPIO7, gpio::Level::Low, OutputConfig::default());
     let echo = Input::new(peripherals.GPIO10, InputConfig::default());
+
+    let mut sonar = Sonar::from(trig, echo);
 
     loop {
         led.set_high();
 
-        trig.set_low();
-        delay.delay_micros(2);
-        trig.set_high();
-        delay.delay_micros(10);
-        trig.set_low();
-
-        let wait_start = Instant::now();
-        let mut got_echo = true;
-        while echo.is_low() {
-            if wait_start.elapsed() > Duration::from_micros(30_000) {
-                got_echo = false;
-                break;
+        match sonar.distance() {
+            Some(distance) => {
+                info!("Distance: {} cm", distance);
+                if distance < 30.0 {
+                    led.set_low();
+                } else {
+                    led.set_high();
+                }
             }
+            None => warn!("Timeout: Echo is not received"),
         }
-
-        if !got_echo {
-            warn!("Timeout: Echo is not received");
-            delay.delay_millis(200);
-            continue;
-        }
-
-        let echo_start = Instant::now();
-        while echo.is_high() {
-            if echo_start.elapsed() > Duration::from_micros(30_000) {
-                break;
-            }
-        }
-
-        let echo_end = Instant::now();
-
-        let duration_us = (echo_end - echo_start).as_micros();
-
-        let distance_cm = duration_us as f32 / 58.0;
-
-        if distance_cm < 30.0 {
-            led.set_low();
-        } else {
-            led.set_high();
-        }
-
-        info!("Distance: {} cm", distance_cm);
 
         delay.delay_millis(200);
     }
-
 }
