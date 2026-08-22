@@ -11,6 +11,7 @@ use defmt::{error, info, warn};
 use esp_hal::clock::CpuClock;
 use esp_hal::gpio::{self, Output, OutputConfig};
 use esp_hal::main;
+use salt_level::monitor_loop::Monitor;
 use salt_level::sonar::Sonar;
 
 #[panic_handler]
@@ -34,27 +35,8 @@ fn main() -> ! {
     let config = esp_hal::Config::default().with_cpu_clock(CpuClock::max());
     let peripherals = esp_hal::init(config);
 
-    let mut led = Output::new(
-        peripherals.GPIO8,
-        gpio::Level::High,
-        OutputConfig::default(),
-    );
-
     let mut sonar = Sonar::new(peripherals.GPIO7, peripherals.GPIO10);
+    let monitor = Monitor::new(sonar);
 
-    loop {
-        led.set_high();
-
-        match sonar.distance(1000) {
-            Some(distance) => {
-                info!("Distance: {} cm", distance);
-                if distance < 30.0 {
-                    led.set_low();
-                } else {
-                    led.set_high();
-                }
-            }
-            None => warn!("Timeout: Echo is not received"),
-        }
-    }
+    return monitor.run();
 }
