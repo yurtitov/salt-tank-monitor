@@ -24,9 +24,10 @@ impl<'a> Sonar<'a> {
         }
     }
 
-    pub fn echo_duration_micros(&mut self) -> Option<f32> {
-        self.delay.delay_millis(200);
-
+    /// Measures the distance to an object in centimeters.
+    ///
+    /// Returns `None` when the echo signal is not received before the timeout.
+    pub fn distance(&mut self, iteration_delay: u32) -> Option<f32> {
         self.trigger_pin.set_low();
         self.delay.delay_micros(2);
         self.trigger_pin.set_high();
@@ -58,6 +59,8 @@ impl<'a> Sonar<'a> {
 
         let duration_micros = (echo_end - echo_start).as_micros();
         let distance_cm = distance_cm(duration_micros as f32);
+
+        self.delay.delay_millis(iteration_delay);
 
         Some(distance_cm)
     }

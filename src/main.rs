@@ -45,7 +45,7 @@ fn main() -> ! {
     loop {
         led.set_high();
 
-        match sonar.echo_duration_micros() {
+        match sonar.distance(1000) {
             Some(distance) => {
                 info!("Distance: {} cm", distance);
                 if distance < 30.0 {
