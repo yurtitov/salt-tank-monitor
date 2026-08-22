@@ -1,8 +1,10 @@
 fn main() {
-    linker_be_nice();
-    println!("cargo:rustc-link-arg=-Tdefmt.x");
-    // make sure linkall.x is the last linker script (otherwise might cause problems with flip-link)
-    println!("cargo:rustc-link-arg=-Tlinkall.x");
+    if std::env::var_os("CARGO_CFG_TARGET_ARCH").as_deref() == Some("riscv32".as_ref()) {
+        linker_be_nice();
+        println!("cargo:rustc-link-arg=-Tdefmt.x");
+        // Make sure linkall.x is the last linker script.
+        println!("cargo:rustc-link-arg=-Tlinkall.x");
+    }
 }
 
 fn linker_be_nice() {

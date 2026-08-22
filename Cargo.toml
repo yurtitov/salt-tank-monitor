@@ -5,18 +5,22 @@ rust-version = "1.97.1"
 version      = "0.1.0"
 
 [[bin]]
-name = "salt-level"
-path = "./src/main.rs"
+name              = "salt-level"
+path              = "./src/main.rs"
+test              = false
+bench             = false
+required-features = ["firmware"]
 
-[dependencies]
+[features]
+firmware = []
+
+[target.'cfg(target_arch = "riscv32")'.dependencies]
 esp-hal = { version = "~1.1.0", features = ["defmt", "esp32c3", "unstable"] }
-
 
 defmt                  = "1.1.1"
 esp-bootloader-esp-idf = { version = "0.5.0", features = ["defmt", "esp32c3"] }
-
-critical-section = "1.2.0"
-rtt-target       = { version = "0.6.2", features = ["defmt"] }
+critical-section       = "1.2.0"
+rtt-target             = { version = "0.6.2", features = ["defmt"] }
 
 
 # For fine tuning these settings, please refer to https://doc.rust-lang.org/cargo/reference/profiles.html

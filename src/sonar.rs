@@ -4,6 +4,8 @@ use esp_hal::{
     time::{Duration, Instant},
 };
 
+use crate::distance_cm;
+
 pub struct Sonar<'a> {
     trigger_pin: Output<'a>,
     echo_pin: Input<'a>,
@@ -22,7 +24,7 @@ impl<'a> Sonar<'a> {
         }
     }
 
-    pub fn distance(&mut self) -> Option<f32> {
+    pub fn echo_duration_micros(&mut self) -> Option<f32> {
         self.delay.delay_millis(200);
 
         self.trigger_pin.set_low();
@@ -54,8 +56,9 @@ impl<'a> Sonar<'a> {
 
         let echo_end = Instant::now();
 
-        let duration_us = (echo_end - echo_start).as_micros();
+        let duration_micros = (echo_end - echo_start).as_micros();
+        let distance_cm = distance_cm(duration_micros as f32);
 
-        Some(duration_us as f32 / 58.31)
+        Some(distance_cm)
     }
 }

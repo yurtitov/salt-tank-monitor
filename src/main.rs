@@ -7,14 +7,11 @@
 )]
 #![deny(clippy::large_stack_frames)]
 
-mod sonar;
-
 use defmt::{error, info, warn};
 use esp_hal::clock::CpuClock;
 use esp_hal::gpio::{self, Output, OutputConfig};
 use esp_hal::main;
-
-use crate::sonar::Sonar;
+use salt_level::sonar::Sonar;
 
 #[panic_handler]
 fn panic(panic_info: &core::panic::PanicInfo) -> ! {
@@ -48,7 +45,7 @@ fn main() -> ! {
     loop {
         led.set_high();
 
-        match sonar.distance() {
+        match sonar.echo_duration_micros() {
             Some(distance) => {
                 info!("Distance: {} cm", distance);
                 if distance < 30.0 {
